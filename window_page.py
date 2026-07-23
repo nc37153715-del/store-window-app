@@ -30,10 +30,10 @@ GUIDE_CARD_WIDTH = 204
 GUIDE_IMAGE_SIZE = 180
 GUIDE_CARD_HEIGHT = 290
 COMPOSITOR_HEIGHT = 820
-COMPOSITOR_UI_VERSION = "v26"
-COMPOSITOR_ASSET_URI_VERSION = 5
-COMPOSITOR_ASSET_PREVIEW_MAX = 480
-COMPOSITOR_BG_MAX_DIM = 1280
+COMPOSITOR_UI_VERSION = "v27"
+COMPOSITOR_ASSET_URI_VERSION = 6
+COMPOSITOR_ASSET_PREVIEW_MAX = 720
+COMPOSITOR_BG_MAX_DIM = 1920
 MAX_WINDOW_IMAGE_DIM = 2048
 
 
@@ -349,7 +349,7 @@ def _get_compositor_background(working_image: Image.Image) -> tuple[str, int, in
     if cache_sig == sig and cached_uri:
         return cached_uri, preview.width, preview.height, coord_scale
 
-    uri = image_to_data_uri(preview, jpeg_quality=62)
+    uri = image_to_data_uri(preview, jpeg_quality=88)
     st.session_state["window_compositor_bg_sig"] = sig
     st.session_state["window_compositor_bg_uri"] = uri
     st.session_state["window_compositor_coord_scale"] = coord_scale
@@ -466,13 +466,22 @@ def _store_client_composite(
     layers: list[dict],
     *,
     working_image: Image.Image,
+    guide_assets: list[dict],
     coord_scale: float = 1.0,
 ) -> None:
+    """최종 저장은 원본 해상도 서버 합성을 우선합니다. 캡처본은 폴백만 사용."""
+    if layers:
+        _compose_layers_and_store(
+            layers,
+            working_image=working_image,
+            guide_assets=guide_assets,
+            coord_scale=coord_scale,
+        )
+        return
+
     composite_image = decode_data_uri_image(composite_uri)
-    full_layers = _scale_layers_coords(layers, coord_scale)
     export_sig = composite_uri[:240]
     saved_path = save_composite_image(composite_image)
-    st.session_state["window_layer_state"] = full_layers
     st.session_state["window_composite_result"] = composite_image
     st.session_state["window_composite_saved_path"] = saved_path
     st.session_state["window_last_export_sig"] = export_sig
@@ -508,7 +517,7 @@ def _render_composite_result_section() -> None:
     st.image(composite_image, use_container_width=True)
 
     buffer = io.BytesIO()
-    composite_image.save(buffer, format="JPEG", quality=90)
+    composite_image.save(buffer, format="JPEG", quality=95)
     st.download_button(
         "합성 이미지 다운로드",
         data=buffer.getvalue(),
@@ -915,24 +924,25 @@ def _render_window_page_body() -> None:
             return
 
         export_sig = (
-            composite_uri[:240]
-            if composite_uri
-            else _export_signature(layers)
+            _export_signature(layers)
+            if layers
+            else (composite_uri[:240] if composite_uri else "")
         )
         if export_sig == st.session_state.get("window_last_export_sig"):
             return
 
         coord_scale = float(st.session_state.get("window_compositor_coord_scale", 1.0))
         try:
-            if composite_uri:
-                _store_client_composite(
-                    composite_uri,
+            if layers:
+                _compose_layers_and_store(
                     layers,
                     working_image=working_image,
+                    guide_assets=guide_assets,
                     coord_scale=coord_scale,
                 )
-            else:
-                _compose_layers_and_store(
+            elif composite_uri:
+                _store_client_composite(
+                    composite_uri,
                     layers,
                     working_image=working_image,
                     guide_assets=guide_assets,
@@ -940,7 +950,7 @@ def _render_window_page_body() -> None:
                 )
             saved_path = st.session_state.get("window_composite_saved_path")
             if saved_path:
-                st.success(f"「Window 합성」 폴더에 저장되었습니다.\n\n`{saved_path}`")
+                st.success(f"합성 이미지가 저장되었습니다.\n\n`{saved_path}`")
         except Exception as exc:
             st.error(f"합성에 실패했습니다: {exc}")
         return

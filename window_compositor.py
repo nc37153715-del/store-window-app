@@ -85,7 +85,7 @@ def build_window_compositor_html(
 
     return f"""
 <!DOCTYPE html>
-<!-- compositor-ui-v26 remount={remount_nonce} -->
+<!-- compositor-ui-v27 remount={remount_nonce} -->
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
@@ -474,7 +474,7 @@ def build_window_compositor_html(
         <div class="zoom-spacer" id="zoomSpacer">
           <div class="stage" id="stage">
             <div class="photo-clip" id="photoClip">
-              <div class="version-badge">합성기 v26 · 자동저장</div>
+              <div class="version-badge">합성기 v27 · 자동저장</div>
               <img class="stage-bg" id="stageBg" alt="매장 외부 사진" />
               <div class="layers-root" id="layersRoot"></div>
               <canvas id="uiOverlay"></canvas>
@@ -517,7 +517,7 @@ const STAGE_PAD = {{
   right: 0.06,
   bottom: 0.28,
 }};
-const EXPORT_JPEG_QUALITY = 0.82;
+const EXPORT_JPEG_QUALITY = 0.95;
 
 function waitNextPaint() {{
   return new Promise((resolve) => {{
@@ -542,14 +542,18 @@ async function captureVisibleSnapshot() {{
   const layout = getStageLayout();
   const w = Math.max(1, layout.photoWidth);
   const h = Math.max(1, layout.photoHeight);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
+  canvas.width = Math.ceil(w * dpr);
+  canvas.height = Math.ceil(h * dpr);
   const ctx = canvas.getContext("2d", {{ alpha: false }});
   if (!ctx) {{
     if (badge) badge.style.visibility = prevBadgeVisibility;
     throw new Error("canvas unsupported");
   }}
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   ctx.fillStyle = "#f7f5f1";
   ctx.fillRect(0, 0, w, h);
@@ -1576,5 +1580,5 @@ def save_composite_image(image: Image.Image) -> str:
     os.makedirs(COMPOSITE_OUTPUT_DIR, exist_ok=True)
     filename = f"window_composite_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     output_path = os.path.join(COMPOSITE_OUTPUT_DIR, filename)
-    image.convert("RGB").save(output_path, format="JPEG", quality=90, optimize=False)
+    image.convert("RGB").save(output_path, format="JPEG", quality=95, optimize=False)
     return output_path
