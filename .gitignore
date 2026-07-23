@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
+.venv/
+venv/
+*.log
+매장사진/Window/Window 합성/
+매장사진/Window/합성결과/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,3 @@
+# Streamlit Community Cloud — 시스템 패키지
+# (opencv 관련 런타임)
+libgl1
