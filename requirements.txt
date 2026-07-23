@@ -1,7 +1,10 @@
-streamlit==1.41.1
-openai==1.61.1
-python-dotenv==1.0.1
-Pillow==11.1.0
-numpy==1.26.4
-opencv-python-headless==4.10.0.84
-streamlit-image-coordinates==0.4.0
+# Streamlit Cloud: never compile from source (causes multi-hour hangs)
+--only-binary=numpy,Pillow,opencv-python-headless
+
+streamlit>=1.37.0
+openai>=1.30.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+numpy>=1.26.0
+opencv-python-headless>=4.8.0,<4.11
+streamlit-image-coordinates>=0.4.0
