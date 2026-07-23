@@ -1,11 +1,12 @@
 """Window — 유리창 홍보물 제거 · 시트지·집기 합성 (독립 실행)"""
 
+from __future__ import annotations
+
 import html
 import os
+import traceback
 
 import streamlit as st
-
-from window_page import render_window_page
 
 WINDOW_PORT = int(os.getenv("STREAMLIT_SERVER_PORT", "8502"))
 
@@ -126,13 +127,25 @@ def main() -> None:
         initial_sidebar_state="collapsed",
     )
     inject_window_theme()
+
+    try:
+        from window_page import render_window_page
+    except Exception:
+        st.error("앱을 불러오는 중 오류가 발생했습니다.")
+        st.code(traceback.format_exc())
+        return
+
     with st.expander("📱 핸드폰으로 사용하기", expanded=is_streamlit_cloud()):
-        if is_streamlit_cloud() or os.path.exists("/mount/src"):
+        if is_streamlit_cloud():
             render_cloud_access_banner()
         else:
             render_local_access_banner()
-    render_window_page()
+
+    try:
+        render_window_page()
+    except Exception:
+        st.error("페이지 실행 중 오류가 발생했습니다.")
+        st.code(traceback.format_exc())
 
 
-if __name__ == "__main__":
-    main()
+main()

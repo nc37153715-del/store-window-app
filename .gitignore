@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 venv/
 *.log
+outputs/composites/
 매장사진/Window/Window 합성/
 매장사진/Window/합성결과/
 .DS_Store

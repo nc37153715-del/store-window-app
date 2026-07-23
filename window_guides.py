@@ -5,9 +5,16 @@ from PIL import Image, ImageDraw
 from image_utils import load_image
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-WINDOW_GUC_DIR = os.path.join(BASE_DIR, "매장사진", "Window", "GUC")
-SHEET_DIR = os.path.join(WINDOW_GUC_DIR, "시트지")
-FIXTURE_DIR = os.path.join(WINDOW_GUC_DIR, "집기")
+# ASCII paths for Streamlit Cloud (Linux) compatibility
+SHEET_DIR = os.path.join(BASE_DIR, "assets", "window", "sheet")
+FIXTURE_DIR = os.path.join(BASE_DIR, "assets", "window", "fixture")
+# Legacy Korean paths (local fallback)
+_LEGACY_SHEET_DIR = os.path.join(BASE_DIR, "매장사진", "Window", "GUC", "시트지")
+_LEGACY_FIXTURE_DIR = os.path.join(BASE_DIR, "매장사진", "Window", "GUC", "집기")
+if not os.path.isdir(SHEET_DIR) and os.path.isdir(_LEGACY_SHEET_DIR):
+    SHEET_DIR = _LEGACY_SHEET_DIR
+if not os.path.isdir(FIXTURE_DIR) and os.path.isdir(_LEGACY_FIXTURE_DIR):
+    FIXTURE_DIR = _LEGACY_FIXTURE_DIR
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 WINDOW_GUIDE_CATEGORIES = (

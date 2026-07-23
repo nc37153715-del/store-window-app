@@ -11,7 +11,7 @@ from PIL import Image
 from overlay import _warp_rgba_overlay, cv2_to_pil, pil_to_cv2
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-COMPOSITE_OUTPUT_DIR = os.path.join(BASE_DIR, "매장사진", "Window", "Window 합성")
+COMPOSITE_OUTPUT_DIR = os.path.join(BASE_DIR, "outputs", "composites")
 _asset_rgba_cache: dict[str, np.ndarray] = {}
 
 
